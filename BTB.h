@@ -5,13 +5,16 @@
 #include "Entry.h"
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 using namespace std;
+
+#define TABLE_SIZE 1024
 
 class BTB
 {
 private:
     //BTB values
-    Entry table [1024];
+    Entry table [TABLE_SIZE];
     uint32_t indexed_pc;
     uint32_t predicted_pc;
     uint32_t index;
@@ -19,6 +22,7 @@ private:
     bool machine_sel; //selects state machine implementation
     
     //Benchmark variables
+    int instruction_count;
     int hits;
     int misses;
     int correct_predictions;
@@ -32,10 +36,9 @@ public:
 
     void run(uint32_t current_pc);
     void compare(uint32_t actual_pc);
-    void insert(uint32_t current_pc, uint32_t target_pc);
     void update_prediction(bool taken);
 
-    void print_results(void);
+    void print_results();
 
 };
 

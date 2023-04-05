@@ -13,32 +13,28 @@ int main(void)
         cout << "\nCould not open trace file\n";
     else
     {
-        int count = 1;
-        cout << "\nOpened file. Beginning simulation.\n";
+        cout << hex << "\nOpened file. Beginning simulation.\n";
         string buffer;
         getline(program_trace, buffer);
-        cout << "first stoi\n";
-        uint32_t curr = stoi(buffer);
+        uint32_t curr = stoi(buffer, 0, 16);
         uint32_t next = 0;
 
         while(!program_trace.eof())
         {
-            count++;
-            //Iterate through pairs of addresses
-            getline(program_trace, buffer);
-            cout << "line " << count << endl;
-            next = stoi(buffer);
-
             //Send current pc to BTB and have it predict target pc
             btb.run(curr);
 
-            //Send actual target pc to BTB and have it update stats accordingly
+            //Send actual target pc to BTB and have it update table/stats accordingly
+            getline(program_trace, buffer);
+            next = stoi(buffer, 0, 16);
             btb.compare(next);
 
+            //Iterate addresses
             curr = next;
         }
 
         btb.print_results();
+        program_trace.close();
     }
 
     return 0;
