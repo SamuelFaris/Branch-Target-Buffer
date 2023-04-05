@@ -185,15 +185,17 @@ void BTB::update_prediction(bool taken)
 void BTB::print_results()
 {
     cout << endl << endl;
-    cout << "          BTB Table            \n";
-    cout << "+-------+----------+----------+\n";
-    cout << "| Entry |    PC    |  Target  |\n";
-    cout << "+-------+----------+----------+\n";
+    cout << "                  BTB Table                 \n";
+    cout << "+-------+----------+----------+------------+\n";
+    cout << "| Entry |    PC    |  Target  | Prediction |\n";
+    cout << "+-------+----------+----------+------------+\n";
 
     for (int i = 0; i < 1024; i++)
+    {
         if (table[i].pc != 0)
-            cout << dec << "|" << setw(7) << i << hex << "| 0x" << table[i].pc << " | 0x" << table[i].target << " |\n";
-    cout << "+-------+----------+----------+\n";
+            cout << dec << "|" << setw(7) << i << hex << "| 0x" << table[i].pc << " | 0x" << table[i].target << " |    0b" << bitset<2>(table[i].prediction) << "    " << "|\n";
+    }
+    cout << "+-------+----------+----------+------------+\n";
 
     double hit_rate = (double)hits/(hits+misses);
     double accuracy = (double)correct_predictions/hits;

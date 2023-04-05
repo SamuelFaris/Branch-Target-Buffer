@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <bitset>
 using namespace std;
 
 #define TABLE_SIZE 1024
