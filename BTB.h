@@ -31,6 +31,7 @@ private:
     int incorrect_addr_count;
     int collisions;
     int branches_taken;
+    int stalls;
 
 public:
     BTB(bool machine_sel);
@@ -39,7 +40,7 @@ public:
     void compare(uint32_t actual_pc);
     void update_prediction(bool taken);
 
-    void print_results();
+    void print_results(fstream& logOut);
 
 };
 

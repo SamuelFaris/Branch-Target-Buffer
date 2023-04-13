@@ -33,7 +33,13 @@ int main(void)
             curr = next;
         }
 
-        btb.print_results();
+        //Write results to log file
+        fstream logOut("results.log", ios::out | ios::trunc);
+        logOut.close();
+        logOut.open("results.log");
+        btb.print_results(logOut);
+
+        logOut.close();
         program_trace.close();
     }
 

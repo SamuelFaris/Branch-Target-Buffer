@@ -65,7 +65,10 @@ void BTB::compare(uint32_t actual_pc)
         if (predicted_pc == actual_pc)
             correct_predictions++;
         else
+        {
             incorrect_predictions++;
+            stalls++;
+        }
         
         //Update table values
         update_prediction(taken);
@@ -88,6 +91,7 @@ void BTB::compare(uint32_t actual_pc)
         table[index].target = actual_pc;
         table[index].prediction = 0;
         misses++;
+        stalls++;
     }
 }
 
@@ -108,30 +112,30 @@ void BTB::update_prediction(bool taken)
         {
             case 0b00:
                 if (taken)
-                    prediction = 0;
+                    prediction = 0b00;
                 else
-                    prediction = 1;
+                    prediction = 0b01;
                 break;
 
-            case 1:
+            case 0b01:
                 if (taken)
-                    prediction = 0;
+                    prediction = 0b00;
                 else
-                    prediction = 2;
+                    prediction = 0b10;
                 break;
 
-            case 2:
+            case 0b10:
                 if (taken)
-                    prediction = 1;
+                    prediction = 0b01;
                 else
-                    prediction = 3;
+                    prediction = 0b11;
                 break;
             
-            case 3:
+            case 0b11:
                 if (taken)
-                    prediction = 2;
+                    prediction = 0b10;
                 else
-                    prediction = 3;
+                    prediction = 0b11;
                 break;
 
             default:
@@ -143,7 +147,6 @@ void BTB::update_prediction(bool taken)
     //If not taken when predicted to be weakly taken, jump to strongly not taken
     else
     {
-        cout << "updating prediction using machine A\n";
         switch(prediction)
         {
             case 0b00:
@@ -182,39 +185,42 @@ void BTB::update_prediction(bool taken)
     table[index].prediction = prediction;
 }
 
-void BTB::print_results()
+//Prints results to logfile
+void BTB::print_results(fstream& logOut)
 {
-    cout << endl << endl;
-    cout << "                  BTB Table                 \n";
-    cout << "+-------+----------+----------+------------+\n";
-    cout << "| Entry |    PC    |  Target  | Prediction |\n";
-    cout << "+-------+----------+----------+------------+\n";
+    logOut << endl << endl;
+    logOut << "                 BTB Table                  \n";
+    logOut << "+-------+----------+----------+------------+\n";
+    logOut << "| Entry |    PC    |  Target  | Prediction |\n";
+    logOut << "+-------+----------+----------+------------+\n";
 
     for (int i = 0; i < 1024; i++)
     {
         if (table[i].pc != 0)
-            cout << dec << "|" << setw(7) << i << hex << "| 0x" << table[i].pc << " | 0x" << table[i].target << " |    0b" << bitset<2>(table[i].prediction) << "    " << "|\n";
+            logOut << dec << "|" << setw(7) << i << hex << "| 0x" << table[i].pc << " | 0x" << table[i].target << " |    0b" << bitset<2>(table[i].prediction) << "    " << "|\n";
     }
-    cout << "+-------+----------+----------+------------+\n";
+    logOut << "+-------+----------+----------+------------+\n";
 
     double hit_rate = (double)hits/(hits+misses);
     double accuracy = (double)correct_predictions/hits;
     double wrong_addr = (double)incorrect_addr_count/incorrect_predictions;
     string state_machine = machine_sel ? "CLASS_STATE_MACHINE" : "STATE_MACHINE_A";
 
-    cout << dec << endl << endl;
-    cout << "          BTB Results          \n";
-    cout << "+-----------------------------+\n";
-    cout << "   Using " << state_machine << "\n\n";
-    cout << "   Instruction count: " << instruction_count << "\n";
-    cout << "   Hits: " << hits << "\n";
-    cout << "   Misses: " << misses << "\n";
-    cout << "   Correct: " << correct_predictions << "\n";
-    cout << "   Incorrect: " << incorrect_predictions << "\n"; 
-    cout << "   Branches Taken: " << branches_taken << "\n";
-    cout << "   Collisions: " << collisions << "\n\n";
-    cout << "   Hit rate: " << hit_rate*100 << "%\n";
-    cout << "   Accuracy: " << accuracy*100 << "%\n";
-    cout << "   Wrong address: " << wrong_addr*100 << "%\n";
-    cout << "+-----------------------------+\n\n";
+    logOut << dec << endl << endl;
+    logOut << "          BTB Results          \n";
+    logOut << "+-----------------------------+\n";
+    logOut << "   Using " << state_machine << "\n\n";
+    logOut << "   Instruction count: " << instruction_count << "\n";
+    logOut << "   Hits: " << hits << "\n";
+    logOut << "   Misses: " << misses << "\n";
+    logOut << "   Correct: " << correct_predictions << "\n";
+    logOut << "   Incorrect: " << incorrect_predictions << "\n"; 
+    logOut << "   Branches Taken: " << branches_taken << "\n";
+    logOut << "   Stalls: " << stalls << "\n";
+    logOut << "   Collisions: " << collisions << "\n\n";
+    logOut << "   Hit rate: " << hit_rate*100 << "%\n";
+    logOut << "   Accuracy: " << accuracy*100 << "%\n";
+    logOut << "   Wrong address: " << wrong_addr*100 << "%\n";
+    logOut << "+-----------------------------+\n\n";
+    cout << "Simulation complete. Results written to results.log\n\n";
 }
