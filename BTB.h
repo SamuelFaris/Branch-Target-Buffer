@@ -21,6 +21,7 @@ private:
     uint32_t index;
     bool taken;
     bool machine_sel; //selects state machine implementation
+    bool collision_on_last; //used to update BTB after a collision in the decoding stage
     
     //Benchmark variables
     int instruction_count;

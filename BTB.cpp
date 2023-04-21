@@ -15,32 +15,31 @@ BTB::BTB(bool machine_sel = 0)
 //Simulates indexing into the BTB and returning the prediction
 void BTB::run(uint32_t current_pc)
 {
-    //remove 20 MSBs and lsr 2 to obtain 10bit indexing value
+    //Remove 20 MSBs and lsr 2 to obtain 10bit indexing value
     instruction_count++;
     indexed_pc = current_pc;
-    index = (indexed_pc & 0x00000FFF) >> 2; 
+    index = (indexed_pc & 0x00000FFF) >> 2;
+    predicted_pc = 0;
+    bool collision_on_last = false;
 
-    //check if entry exists, if it does then assign predicted pc based on table entry
+    //Check if entry exists, if it does then assign predicted pc based on table entry
     if (table[index].pc != 0)
     {
-        //check for collision
+        //Check for collision
         if (table[index].pc != indexed_pc)
         {
-            table[index].pc = indexed_pc;
             collisions++;
+            collision_on_last = true;
+            return;
         }
 
-        //update predicted_pc: target if taken, pc+4 if not taken
-        if (table[index].prediction == 0 || table[index].prediction == 1)
-           predicted_pc = table[index].target;
+        //Update predicted_pc: target if taken, pc+4 if not taken
+        if (table[index].prediction == 0b00 || table[index].prediction == 0b01)
+            predicted_pc = table[index].target;
         else
             predicted_pc = current_pc + 4;
         return;
     }
-
-    //no prediction if entry does not exist
-    predicted_pc = 0;
-    return;
 }
 
 //Simulates the comparison between predicted and actual pcs and updates table as needed
@@ -56,7 +55,6 @@ void BTB::compare(uint32_t actual_pc)
         taken = false;
     
     //If the entry exists already, update BTB prediction data
-    //TODO: check back on the if condition here
     if (table[index].pc == indexed_pc)
     {
         hits++;
@@ -84,12 +82,12 @@ void BTB::compare(uint32_t actual_pc)
  
     }
 
-    //Else add this entry to the BTB if branch was taken
-    else if (taken)
+    //Else add this entry to the BTB if branch was taken or collision occured
+    else if (taken || collision_on_last)
     {
         table[index].pc = indexed_pc;
         table[index].target = actual_pc;
-        table[index].prediction = 0;
+        table[index].prediction = 0b00;
         misses++;
         stalls++;
     }
@@ -190,16 +188,16 @@ void BTB::print_results(fstream& logOut)
 {
     logOut << endl << endl;
     logOut << "                 BTB Table                  \n";
-    logOut << "+-------+----------+----------+------------+\n";
-    logOut << "| Entry |    PC    |  Target  | Prediction |\n";
-    logOut << "+-------+----------+----------+------------+\n";
+    logOut << "┌───────┬──────────┬──────────┬────────────┐\n";
+    logOut << "│ Entry │    PC    │  Target  │ Prediction │\n";
+    logOut << "├───────┼──────────┼──────────┼────────────┤\n";
 
     for (int i = 0; i < 1024; i++)
     {
         if (table[i].pc != 0)
-            logOut << dec << "|" << setw(7) << i << hex << "| 0x" << table[i].pc << " | 0x" << table[i].target << " |    0b" << bitset<2>(table[i].prediction) << "    " << "|\n";
+            logOut << dec << "│" << setw(7) << i << hex << "│ 0x" << table[i].pc << " │ 0x" << table[i].target << " │    0b" << bitset<2>(table[i].prediction) << "    " << "│\n";
     }
-    logOut << "+-------+----------+----------+------------+\n";
+    logOut << "└───────┴──────────┴──────────┴────────────┘\n";
 
     double hit_rate = (double)hits/(hits+misses);
     double accuracy = (double)correct_predictions/hits;
@@ -208,7 +206,7 @@ void BTB::print_results(fstream& logOut)
 
     logOut << dec << endl << endl;
     logOut << "          BTB Results          \n";
-    logOut << "+-----------------------------+\n";
+    logOut << "───────────────────────────────\n";
     logOut << "   Using " << state_machine << "\n\n";
     logOut << "   Instruction count: " << instruction_count << "\n";
     logOut << "   Hits: " << hits << "\n";
@@ -221,6 +219,6 @@ void BTB::print_results(fstream& logOut)
     logOut << "   Hit rate: " << hit_rate*100 << "%\n";
     logOut << "   Accuracy: " << accuracy*100 << "%\n";
     logOut << "   Wrong address: " << wrong_addr*100 << "%\n";
-    logOut << "+-----------------------------+\n\n";
+    logOut << "───────────────────────────────\n";
     cout << "Simulation complete. Results written to results.log\n\n";
 }
