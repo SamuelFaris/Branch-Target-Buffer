@@ -15,20 +15,20 @@ BTB::BTB(bool machine_sel = 0)
 //Simulates indexing into the BTB and returning the prediction
 void BTB::run(uint32_t current_pc)
 {
-    //Remove 20 MSBs and lsr 2 to obtain 10bit indexing value
     instruction_count++;
     indexed_pc = current_pc;
-    index = (indexed_pc & 0x00000FFF) >> 2;
-    predicted_pc = 0;
-    bool collision_on_last = false;
+    predicted_pc = current_pc+4;
+    collision_on_last = false;
 
+    //Remove 20 MSBs and lsr 2 to obtain 10bit indexing value
+    index = (indexed_pc & 0x00000FFF) >> 2;
+    
     //Check if entry exists, if it does then assign predicted pc based on table entry
     if (table[index].pc != 0)
     {
-        //Check for collision
+        //Check for collision, confirm valid collision if taken in BTB::compare()
         if (table[index].pc != indexed_pc)
         {
-            collisions++;
             collision_on_last = true;
             return;
         }
@@ -55,7 +55,7 @@ void BTB::compare(uint32_t actual_pc)
         taken = false;
     
     //If the entry exists already, update BTB prediction data
-    if (table[index].pc == indexed_pc)
+    if (taken && table[index].pc == indexed_pc)
     {
         hits++;
 
@@ -78,16 +78,16 @@ void BTB::compare(uint32_t actual_pc)
                 incorrect_addr_count++;
             }
         }
-
- 
     }
 
-    //Else add this entry to the BTB if branch was taken or collision occured
-    else if (taken || collision_on_last)
+    //Else add this entry to the BTB if branch was taken
+    //or a valid collision was detected in the last stage
+    else if (taken || (collision_on_last && taken))
     {
         table[index].pc = indexed_pc;
         table[index].target = actual_pc;
         table[index].prediction = 0b00;
+        collisions = collision_on_last ? collisions+1 : collisions;
         misses++;
         stalls++;
     }
