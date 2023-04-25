@@ -106,6 +106,7 @@ void BTB::update_prediction(bool taken)
     //Using state machine from lecture slides
     if (machine_sel)
     {
+        //cout << "from 0b" << bitset<2>(prediction) << " to 0b";
         switch(prediction)
         {
             case 0b00:
@@ -180,6 +181,7 @@ void BTB::update_prediction(bool taken)
         }
     }
 
+    //cout << bitset<2>(prediction) << endl << endl;
     table[index].prediction = prediction;
 }
 
@@ -202,6 +204,7 @@ void BTB::print_results(fstream& logOut)
     double hit_rate = (double)hits/(hits+misses);
     double accuracy = (double)correct_predictions/hits;
     double wrong_addr = (double)incorrect_addr_count/incorrect_predictions;
+    cout << dec << "incorrect addr: " << incorrect_addr_count << "\nincorrect preds: " << incorrect_predictions << endl;
     string state_machine = machine_sel ? "CLASS_STATE_MACHINE" : "STATE_MACHINE_A";
 
     logOut << dec << endl << endl;
