@@ -12,6 +12,12 @@ BTB::BTB(bool machine_sel = 0)
     }
 }
 
+void BTB::newRun(uint32_t current_pc, uint32_t next_pc)
+{
+    
+}
+
+
 //Simulates indexing into the BTB and returning the prediction
 void BTB::run(uint32_t current_pc)
 {
@@ -26,6 +32,7 @@ void BTB::run(uint32_t current_pc)
     //Check if entry exists, if it does then assign predicted pc based on table entry
     if (table[index].pc != 0)
     {
+
         //Check for collision, confirm valid collision if taken in BTB::compare()
         if (table[index].pc != indexed_pc)
         {
@@ -53,7 +60,18 @@ void BTB::compare(uint32_t actual_pc)
     }
     else
         taken = false;
-    
+
+    //Anshul/Matt program trace answers:
+    /*
+    Hits: 2049
+    Misses: 167
+    Correct: 1922
+    Incorrect: 127
+    Wrong addr: 85
+    Collisions: 6
+    Stalls: 294
+    */
+
     //If the entry exists already, update BTB prediction data
     if (taken && table[index].pc == indexed_pc)
     {
@@ -68,8 +86,6 @@ void BTB::compare(uint32_t actual_pc)
             stalls++;
         }
         
-        //Update table values
-        update_prediction(taken);
         if (taken)
         {
             if (table[index].target != actual_pc)
@@ -79,6 +95,7 @@ void BTB::compare(uint32_t actual_pc)
             }
         }
     }
+
 
     //Else add this entry to the BTB if branch was taken
     //or a valid collision was detected in the last stage
@@ -91,6 +108,10 @@ void BTB::compare(uint32_t actual_pc)
         misses++;
         stalls++;
     }
+
+    //Update table values if taken or if not taken and entry exists
+    if (taken || !taken && (table[index].pc == indexed_pc))
+        update_prediction(taken);
 }
 
 //Uses state machines to update prediction value

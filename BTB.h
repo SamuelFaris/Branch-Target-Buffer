@@ -37,6 +37,7 @@ private:
 public:
     BTB(bool machine_sel);
 
+    void newRun(uint32_t current_pc, uint32_t next_pc);
     void run(uint32_t current_pc);
     void compare(uint32_t actual_pc);
     void update_prediction(bool taken);
