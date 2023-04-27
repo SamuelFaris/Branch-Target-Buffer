@@ -168,20 +168,21 @@ Trace: program_trace.txt
 └───────┴──────────┴──────────┴────────────┘
 
 
-          BTB Results          
-───────────────────────────────
+           BTB Results          
+─────────────────────────────────
    Using CLASS_STATE_MACHINE
 
-   Instruction count: 11153
+   Instruction count: 11154
    Hits: 1950
    Misses: 167
    Correct: 1863
    Incorrect: 87
-   Branches Taken: 2117
+   Branches taken: 2117
+   Wrong addresses: 85
    Stalls: 254
    Collisions: 6
 
    Hit rate: 92.1115%
    Accuracy: 95.5385%
-   Wrong address: 97.7011%
-───────────────────────────────
+   Wrong address rate: 97.7011%
+─────────────────────────────────

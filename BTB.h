@@ -24,7 +24,7 @@ private:
     bool collision_on_last; //used to update BTB after a collision in the decoding stage
     
     //Benchmark variables
-    int instruction_count;
+    int instruction_count = 1;
     int hits;
     int misses;
     int correct_predictions;
@@ -37,7 +37,6 @@ private:
 public:
     BTB(bool machine_sel);
 
-    void newRun(uint32_t current_pc, uint32_t next_pc);
     void run(uint32_t current_pc);
     void compare(uint32_t actual_pc);
     void update_prediction(bool taken);

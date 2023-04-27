@@ -12,18 +12,12 @@ BTB::BTB(bool machine_sel = 0)
     }
 }
 
-void BTB::newRun(uint32_t current_pc, uint32_t next_pc)
-{
-    
-}
-
-
 //Simulates indexing into the BTB and returning the prediction
 void BTB::run(uint32_t current_pc)
 {
     instruction_count++;
     indexed_pc = current_pc;
-    predicted_pc = current_pc+4;
+    predicted_pc = current_pc + 4;
     collision_on_last = false;
 
     //Remove 20 MSBs and lsr 2 to obtain 10bit indexing value
@@ -33,14 +27,14 @@ void BTB::run(uint32_t current_pc)
     if (table[index].pc != 0)
     {
 
-        //Check for collision, confirm valid collision if taken in BTB::compare()
+        //Exit if collision, confirm if PC is a taken branch in next step
         if (table[index].pc != indexed_pc)
         {
             collision_on_last = true;
             return;
         }
 
-        //Update predicted_pc: target if taken, pc+4 if not taken
+        //Send out predicted_pc: target if taken, pc+4 if not taken
         if (table[index].prediction == 0b00 || table[index].prediction == 0b01)
             predicted_pc = table[index].target;
         else
@@ -61,16 +55,6 @@ void BTB::compare(uint32_t actual_pc)
     else
         taken = false;
 
-    //Anshul/Matt program trace answers:
-    /*
-    Hits: 2049
-    Misses: 167
-    Correct: 1922
-    Incorrect: 127
-    Wrong addr: 85
-    Collisions: 6
-    Stalls: 294
-    */
 
     //If the entry exists already, update BTB prediction data
     if (taken && table[index].pc == indexed_pc)
@@ -86,13 +70,10 @@ void BTB::compare(uint32_t actual_pc)
             stalls++;
         }
         
-        if (taken)
-        {
-            if (table[index].target != actual_pc)
-            {   
-                table[index].target = actual_pc;
-                incorrect_addr_count++;
-            }
+        if (table[index].target != actual_pc)
+        {   
+            table[index].target = actual_pc;
+            incorrect_addr_count++;
         }
     }
 
@@ -225,24 +206,24 @@ void BTB::print_results(fstream& logOut)
     double hit_rate = (double)hits/(hits+misses);
     double accuracy = (double)correct_predictions/hits;
     double wrong_addr = (double)incorrect_addr_count/incorrect_predictions;
-    cout << dec << "incorrect addr: " << incorrect_addr_count << "\nincorrect preds: " << incorrect_predictions << endl;
     string state_machine = machine_sel ? "CLASS_STATE_MACHINE" : "STATE_MACHINE_A";
 
     logOut << dec << endl << endl;
-    logOut << "          BTB Results          \n";
-    logOut << "───────────────────────────────\n";
+    logOut << "           BTB Results          \n";
+    logOut << "─────────────────────────────────\n";
     logOut << "   Using " << state_machine << "\n\n";
     logOut << "   Instruction count: " << instruction_count << "\n";
     logOut << "   Hits: " << hits << "\n";
     logOut << "   Misses: " << misses << "\n";
     logOut << "   Correct: " << correct_predictions << "\n";
     logOut << "   Incorrect: " << incorrect_predictions << "\n"; 
-    logOut << "   Branches Taken: " << branches_taken << "\n";
+    logOut << "   Branches taken: " << branches_taken << "\n";
+    logOut << "   Wrong addresses: " << incorrect_addr_count << "\n";
     logOut << "   Stalls: " << stalls << "\n";
     logOut << "   Collisions: " << collisions << "\n\n";
     logOut << "   Hit rate: " << hit_rate*100 << "%\n";
     logOut << "   Accuracy: " << accuracy*100 << "%\n";
-    logOut << "   Wrong address: " << wrong_addr*100 << "%\n";
-    logOut << "───────────────────────────────\n";
+    logOut << "   Wrong address rate: " << wrong_addr*100 << "%\n";
+    logOut << "─────────────────────────────────\n";
     cout << "Simulation complete. Results written to results.log\n\n";
 }
