@@ -9,7 +9,7 @@
 
 int main(void)
 {
-    string fileName = TEST_1;
+    string fileName = TEST_3;
     BTB btb(CLASS_STATE_MACHINE);
 
     fstream program_trace(fileName);

@@ -26,7 +26,10 @@ void BTB::run(uint32_t current_pc)
     //Check if entry exists, if it does then assign predicted pc based on table entry
     if (table[index].pc != 0)
     {
-
+        //Hit if entry is in table
+        if (table[index].pc == indexed_pc)
+            hits++;
+        
         //Exit if collision, confirm if PC is a taken branch in next step
         if (table[index].pc != indexed_pc)
         {
@@ -57,10 +60,8 @@ void BTB::compare(uint32_t actual_pc)
 
 
     //If the entry exists already, update BTB prediction data
-    if (taken && table[index].pc == indexed_pc)
+    if (table[index].pc == indexed_pc)
     {
-        hits++;
-
         //Update prediction counts
         if (predicted_pc == actual_pc)
             correct_predictions++;
@@ -70,7 +71,8 @@ void BTB::compare(uint32_t actual_pc)
             stalls++;
         }
         
-        if (table[index].target != actual_pc)
+        //Check for incorrect target addr
+        if (taken && table[index].target != actual_pc)
         {   
             table[index].target = actual_pc;
             incorrect_addr_count++;
